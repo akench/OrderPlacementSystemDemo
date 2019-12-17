@@ -5,7 +5,7 @@ import uuid
 
 
 app = Flask(__name__)
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', socket_timeout=99999999))
 channel = connection.channel()
 
 @app.route('/placeOrder', methods=['POST'])

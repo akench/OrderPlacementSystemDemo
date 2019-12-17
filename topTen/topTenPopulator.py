@@ -11,23 +11,6 @@ r = redis.Redis()
 
 def calculateTopTenItems(sec):
     """
-    aggregate(
-        [ 
-            {
-                $match: {'orderPlacedTime': { $gte: 1576457220}}
-            }, 
-            {
-                $group: {_id: "$id", totalscore: { $sum: "$quantity"}}
-            }, 
-            {
-                $sort : {totalscore : -1}
-            }, 
-            { 
-                $limit : 10
-            } 
-        ]
-    )
-
     aggregate 
     1st param = filter
     2nd param = grouping mechanism 
@@ -35,15 +18,21 @@ def calculateTopTenItems(sec):
     4th param get the first 10
     """
     startTime = time.time() - sec
-    query = ([
-        { '$match': { 'orderPlacedTime': { '$gte': startTime } }},
-        { '$group': { '_id': '$id', 'itemCount': { '$sum': '$quantity' } }},
-        { '$sort': { 'itemCount': -1 }},
-        { '$limit': 10 }
+    aggregateQuery = ([
+        {'$match': {'orderPlacedTime': {'$gte': startTime}}},
+        {'$group': {'_id': '$id', 'itemCount': {'$sum': '$quantity'}}},
+        {'$sort': {'itemCount': -1}},
+        {'$limit': 10}
     ])
 
-    topTenItems = list(collection.aggregate(query))
+    topTenItems = list(collection.aggregate(aggregateQuery))
 
     r.set("topTen", json.dumps(topTenItems))
 
-calculateTopTenItems(10)
+
+if __name__ == '__main__':
+    timeWindow = 10
+    while True:
+        print("calculating top 10")
+        calculateTopTenItems(timeWindow)
+        time.sleep(timeWindow)

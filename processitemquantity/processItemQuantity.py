@@ -12,7 +12,7 @@ def recordItemQuantity(channel, method, properties, body):
     collection.insert_one(entry)
 
 if __name__ == '__main__':
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', socket_timeout=99999999))
     channel = connection.channel()
     channel.basic_consume(queue='ItemQuantityQueue', auto_ack=True, on_message_callback=recordItemQuantity)
 
