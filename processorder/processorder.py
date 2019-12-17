@@ -9,14 +9,15 @@ collection = db.orders
 
 
 def processOrder(channel, method, properties, body):
-    data = json.loads(body)
-    print(data)
+    order = json.loads(body)
+    print(order)
 
     # insert whole order into mongodb
-    order_id = collection.insert_one(data).inserted_id
+    order_id = collection.insert_one(order).inserted_id
 
     # insert each order entry into queue so items ordered can be updated
-    for entry in data["order"]["entries"]:
+    for entry in order["entries"]:
+        entry['orderPlacedTime'] = order['orderPlacedTime']
         channel.basic_publish(exchange='', routing_key='ItemQuantityQueue', body=json.dumps(entry))
 
 

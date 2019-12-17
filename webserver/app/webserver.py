@@ -1,5 +1,7 @@
 from flask import Flask, request, render_template, redirect
 import requests as r
+import time
+import json
 
 app = Flask(__name__)
 
@@ -12,14 +14,15 @@ def index():
         return redirect("http://localhost:5000?previousOrder=" + str(id))
 
     elif request.method == 'GET':
-        return render_template('index.html', id = request.args.get('previousOrder', default=None, type=str))
+
+        topTenItemsResponse = r.get(url="http://localhost:5002/topTenItems")
+        return render_template('index.html', id=request.args.get('previousOrder', default=None, type=str), topTenItems=topTenItemsResponse.text)
 
 
 def buildOrderJSON(formData):
     json = {
-        'order': {
-            'entries': []
-        }
+        'entries': [],
+        'orderPlacedTime': time.time()
     }
 
     itemIdBase = 'ItemId'
@@ -28,9 +31,9 @@ def buildOrderJSON(formData):
     while formData.get(quantityBase + str(num)):
         entry = {
             'id': formData.get(itemIdBase + str(num)),
-            'quantity': formData.get(quantityBase + str(num))
+            'quantity': int(formData.get(quantityBase + str(num)))
         }
-        json['order']['entries'].append(entry)
+        json['entries'].append(entry)
         num += 1
 
     return json
